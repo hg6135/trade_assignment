@@ -168,22 +168,23 @@ def main():
     trades_list = os.listdir(new_trades_path)
     for trade_file in trades_list:
         with open(f"{new_trades_path}/{trade_file}", 'r') as trd_file:
-            trade = json.loads(trd_file.read())
-        #os.remove(f"{new_trades_path}/{trade_file}")
-        if not valid_maturity_date(trade):
-            continue
-        ver_validity = valid_version(trade, trade_store)
+            trades = json.loads(trd_file.read())
 
-        if ver_validity == 'Rejected Trade':
-            try:
-                raise Exception(f"Invalid Version of trade {trade['trade_id']}"\
-                                f"in file {trade_file}")
-            except:
+        for trd in trades:
+            if not valid_maturity_date(trd):
                 continue
-        elif ver_validity == "Existing Trade":
-            trade_store = update_trade(trade, trade_store)
-        else:
-            trade_store = add_trade(trade, trade_store)
+            ver_validity = valid_version(trd, trade_store)
+    
+            if ver_validity == 'Rejected Trade':
+                try:
+                    raise Exception(f"Invalid Version of trade {trd['trade_id']}"\
+                                    f"in file {trade_file}")
+                except:
+                    continue
+            elif ver_validity == "Existing Trade":
+                trade_store = update_trade(trd, trade_store)
+            else:
+                trade_store = add_trade(trd, trade_store)
 
     trade_store = update_expiry(trade_store)
     trade_store.to_csv(store_path, index = False)
