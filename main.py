@@ -46,7 +46,6 @@ def get_trade_versions(trade_id: str, trade_store: pd.DataFrame):
             cur_versions (pd.DataFrame): List of all trades for given trade id
     """
 
-    trade_store = pd.read_csv(store_path)
     cur_versions = trade_store.loc[trade_store['Trade Id'] == trade_id]
     return cur_versions
 
@@ -66,11 +65,9 @@ def valid_version(trade: dict, trade_store: pd.DataFrame):
     trade_version = trade['version']
 
     cur_trade_versions = get_trade_versions(trade_id, trade_store)
-    print(cur_trade_versions)
     max_cur_version = cur_trade_versions['Version'].max()
-    print(max_cur_version)
 
-    if max_cur_version > trade_version or cur_trade_versions.empty:
+    if max_cur_version < trade_version or cur_trade_versions.empty:
         return "New Trade"
     elif max_cur_version == trade_version:
         return "Existing Trade"
@@ -176,7 +173,7 @@ def main():
         if not valid_maturity_date(trade):
             continue
         ver_validity = valid_version(trade, trade_store)
-        print(ver_validity)
+
         if ver_validity == 'Rejected Trade':
             try:
                 raise Exception(f"Invalid Version of trade {trade['trade_id']}"\
@@ -190,6 +187,3 @@ def main():
 
     trade_store = update_expiry(trade_store)
     trade_store.to_csv(store_path, index = False)
-
-
-main()
